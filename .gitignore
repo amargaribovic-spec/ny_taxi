@@ -1,0 +1,21 @@
+# data — parquet files are large; keep the dir, not the contents
+data/raw/*
+!data/raw/.gitkeep
+
+# spark / jupyter runtime artifacts
+spark-warehouse/
+metastore_db/
+derby.log
+.ipynb_checkpoints/
+__pycache__/
+*.pyc
+
+# local working rules / planning (keep the public repo clean)
+CLAUDE.md
+SCOPE.md
+SPARK_GUIDE.md
+
+# os / editor
+.DS_Store
+.idea/
+.vscode/
