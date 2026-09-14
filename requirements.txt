@@ -1,0 +1,4 @@
+# Extra Python deps layered on top of the pyspark-notebook base image.
+# pyspark, pandas, matplotlib, pyarrow are already provided by the base.
+polars        # fast local DataFrame — an alternative to pandas for small results
+plotly        # interactive charts for the final analysis / write-up

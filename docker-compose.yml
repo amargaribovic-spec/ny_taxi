@@ -1,0 +1,15 @@
+services:
+  pyspark:
+    build: .
+    image: ny_taxi_pyspark
+    container_name: ny_taxi_pyspark
+    working_dir: /home/jovyan/work
+    ports:
+      - "8888:8888"   # JupyterLab
+      - "4040:4040"   # Spark UI (live while a Spark job is running)
+    volumes:
+      - ./notebooks:/home/jovyan/work/notebooks   # your notebooks
+      - ./src:/home/jovyan/work/src               # PySpark scripts
+      - ./data:/home/jovyan/work/data             # the parquet data (gitignored)
+    environment:
+      - JUPYTER_ENABLE_LAB=yes
