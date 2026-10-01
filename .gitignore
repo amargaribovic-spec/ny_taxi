@@ -1,6 +1,10 @@
-# data — parquet files are large; keep the dir, not the contents
+# data — parquet files are large; keep the dirs, not the contents
 data/raw/*
 !data/raw/.gitkeep
+data/staging/*
+!data/staging/.gitkeep
+data/marts/*
+!data/marts/.gitkeep
 
 # spark / jupyter runtime artifacts
 spark-warehouse/
