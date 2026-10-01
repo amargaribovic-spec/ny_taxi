@@ -15,7 +15,7 @@ COMPOSE="docker compose"
 
 case "${1:-help}" in
   up)
-    $COMPOSE up -d --build
+    $COMPOSE up -d
     printf "waiting for JupyterLab to start"
     url=""
     for _ in $(seq 1 30); do
@@ -39,14 +39,20 @@ case "${1:-help}" in
   shell)  $COMPOSE exec -w /home/jovyan/work pyspark bash ;;
   submit)
     shift || true
-    $COMPOSE exec -w /home/jovyan/work pyspark spark-submit "$@"
+    # PYTHONPATH=src so jobs can `from common import ...`.
+    # --driver-memory: in local mode the driver IS the executor, and the default
+    # ~1g heap OOMs on the full data. 5g fits our 7.7g Docker; override with
+    # SPARK_DRIVER_MEM=NNg ./run.sh submit ... on a smaller/bigger machine.
+    $COMPOSE exec -w /home/jovyan/work -e PYTHONPATH=/home/jovyan/work/src pyspark \
+      spark-submit --driver-memory "${SPARK_DRIVER_MEM:-5g}" "$@"
     ;;
   download)
     shift || true
     bash src/download_data.sh "$@"
     ;;
-  down)   $COMPOSE down ;;
+  rebuild) $COMPOSE up -d --build ;;   # only when the Dockerfile / requirements change
+  down)    $COMPOSE down ;;
   *)
-    echo "usage: ./run.sh [up|token|logs|shell|submit <file>|download [--full]|down]"
+    echo "usage: ./run.sh [up|rebuild|token|logs|shell|submit <file>|download [--full]|down]"
     ;;
 esac
