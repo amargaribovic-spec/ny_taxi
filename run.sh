@@ -43,8 +43,12 @@ case "${1:-help}" in
     # --driver-memory: in local mode the driver IS the executor, and the default
     # ~1g heap OOMs on the full data. 5g fits our 7.7g Docker; override with
     # SPARK_DRIVER_MEM=NNg ./run.sh submit ... on a smaller/bigger machine.
+    # --master local[N]: N = concurrent tasks, each holding its own read/write
+    # buffers in that one heap. Fewer cores = lower peak memory. Default all cores;
+    # for heavy jobs (HVFHV) run e.g. SPARK_CORES=4 ./run.sh submit ...
     $COMPOSE exec -w /home/jovyan/work -e PYTHONPATH=/home/jovyan/work/src pyspark \
-      spark-submit --driver-memory "${SPARK_DRIVER_MEM:-5g}" "$@"
+      spark-submit --master "local[${SPARK_CORES:-*}]" \
+      --driver-memory "${SPARK_DRIVER_MEM:-5g}" "$@"
     ;;
   download)
     shift || true
