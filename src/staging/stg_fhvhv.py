@@ -4,9 +4,9 @@ Renames HVFHV's columns to match stg_yellow (trip_miles -> trip_distance,
 base_passenger_fare -> fare_amount, ...) so the two modes can be unionByName'd in
 the marts. Casts absorb year-to-year drift; then filter to the study years.
 """
-from pyspark.sql.functions import col, year
+from pyspark.sql.functions import col
 
-from common import get_spark, RAW, STAGING, STUDY_YEARS
+from common import get_spark, RAW, STAGING, in_study_window
 
 spark = get_spark("stg_fhvhv")
 
@@ -24,7 +24,7 @@ fhvhv = spark.read.parquet(f"{RAW}/fhvhv_tripdata_*.parquet").select(
     col("tips").cast("double").alias("tip_amount"),
 )
 
-fhvhv = fhvhv.filter(year("pickup_datetime").isin(*STUDY_YEARS))
+fhvhv = in_study_window(fhvhv)
 
 fhvhv.write.mode("overwrite").parquet(f"{STAGING}/fhvhv")
 

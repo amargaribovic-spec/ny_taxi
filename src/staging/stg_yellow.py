@@ -4,9 +4,9 @@ The TLC schema drifts (passenger_count is double in 2019/2020, bigint in 2025), 
 read each consistent-schema group on its own, cast to explicit types, union, and keep
 only the study window.
 """
-from pyspark.sql.functions import col, year
+from pyspark.sql.functions import col
 
-from common import get_spark, RAW, STAGING, STUDY_YEARS
+from common import get_spark, RAW, STAGING, in_study_window
 
 spark = get_spark("stg_yellow")
 
@@ -33,10 +33,7 @@ older = spark.read.parquet(
 )
 newer = spark.read.parquet(f"{RAW}/yellow_tripdata_2025-*.parquet")
 
-yellow = conform(older).unionByName(conform(newer))
-
-# drop mis-recorded timestamps outside the study window
-yellow = yellow.filter(year("pickup_datetime").isin(*STUDY_YEARS))
+yellow = in_study_window(conform(older).unionByName(conform(newer)))
 
 yellow.write.mode("overwrite").parquet(f"{STAGING}/yellow")
 print(f"staging/yellow written: {yellow.count():,} rows")
