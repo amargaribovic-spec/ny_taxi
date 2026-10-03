@@ -4,7 +4,7 @@ Imported by every job (staging + marts). run.sh puts src/ on PYTHONPATH so
 `from common import ...` resolves from any subfolder.
 """
 from pyspark.sql import SparkSession
-from pyspark.sql.functions import col, year
+from pyspark.sql.functions import col, lit, year
 
 RAW = "/home/jovyan/work/data/raw"          # bronze — downloaded parquet, untouched
 STAGING = "/home/jovyan/work/data/staging"  # silver — cleaned & conformed
@@ -24,3 +24,12 @@ def in_study_window(df, ts="pickup_datetime"):
     """Study years, aligned to the rideshare start so yellow and rideshare span the
     same months (drops yellow's Jan 2019)."""
     return df.filter(year(col(ts)).isin(*STUDY_YEARS) & (col(ts) >= STUDY_START))
+
+
+def trips_with_mode(spark, *cols):
+    """Both silver tables stacked with a `mode` label, projected to the given columns.
+    The shared input for every cross-mode mart."""
+    def one(table, mode):
+        return spark.read.parquet(f"{STAGING}/{table}").select(*cols).withColumn("mode", lit(mode))
+
+    return one("yellow", "yellow").unionByName(one("fhvhv", "rideshare"))

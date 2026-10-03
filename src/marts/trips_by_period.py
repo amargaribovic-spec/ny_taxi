@@ -1,27 +1,17 @@
 """Gold: monthly trip volume by mode (yellow vs rideshare) -> data/marts/trips_by_period.
 
-Stamps a `mode` label on each silver table and unions them -- the shape the other
-cross-mode marts reuse.
+Trips per (year, month, mode) from both silver tables.
 """
-from pyspark.sql.functions import year, month, lit
+from pyspark.sql.functions import year, month
 
-from common import get_spark, STAGING, MARTS
+from common import get_spark, MARTS, trips_with_mode
 
 spark = get_spark("mart_trips_by_period")
 
-
-def trips(table, mode):
-    return (
-        spark.read.parquet(f"{STAGING}/{table}")
-        .select("pickup_datetime")
-        .withColumn("mode", lit(mode))
-    )
-
-
-trips_all = trips("yellow", "yellow").unionByName(trips("fhvhv", "rideshare"))
+trips = trips_with_mode(spark, "pickup_datetime")
 
 mart = (
-    trips_all.groupBy(
+    trips.groupBy(
         year("pickup_datetime").alias("year"),
         month("pickup_datetime").alias("month"),
         "mode",
