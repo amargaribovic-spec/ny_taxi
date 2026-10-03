@@ -46,6 +46,7 @@ write-up.
 ```
 ny_taxi/
 ├── README.md
+├── docs/PERFORMANCE.md     # tuning notes, baseline timings, optimization write-up
 ├── Dockerfile              # pyspark-notebook base + extra libs
 ├── docker-compose.yml      # the pyspark service (JupyterLab + Spark UI)
 ├── requirements.txt        # extra Python deps (polars, plotly)
@@ -73,3 +74,11 @@ ny_taxi/
 
 > Note: HVFHV data begins **Feb 2019**, so `fhvhv_tripdata_2019-01` doesn't exist —
 > the download script skips it automatically.
+
+## Performance
+
+The pipeline is **memory-bound** (one container, one JVM) and leans on column pruning,
+predicate pushdown, a broadcast join, map-side partial aggregation, and AQE — no config
+tuning. Baseline timings, the plan/UI evidence, the memory knobs (`SPARK_CORES`,
+`maxPartitionBytes`, `--driver-memory`), and a repartition optimization that backfired are
+written up in **[docs/PERFORMANCE.md](docs/PERFORMANCE.md)**.
