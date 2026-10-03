@@ -2,8 +2,8 @@
 Day-1 first look: read the NYC taxi parquet and profile it.
 
 Run inside the container:
-    ./run.sh submit src/first_look.py
-    ./run.sh submit src/first_look.py "data/raw/fhvhv_tripdata_*.parquet"
+    ./run.sh submit src/explore/first_look.py
+    ./run.sh submit src/explore/first_look.py "data/raw/fhvhv_tripdata_*.parquet"
 
 Reads a directory/glob of parquet as one Spark DataFrame, then prints the
 schema, the row count, and a sample. Defaults to the yellow-taxi files so the

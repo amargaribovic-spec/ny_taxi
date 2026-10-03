@@ -2,7 +2,7 @@
 Day 4 — read the execution plan and see partitions.
 
 Run inside the container:
-    ./run.sh submit src/explain_demo.py
+    ./run.sh submit src/explore/explain_demo.py
 
 explain() does NOT run the query — it just prints the plan Spark *would* run, so
 this is instant and safe. Read the physical plan BOTTOM-UP:

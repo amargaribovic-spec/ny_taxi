@@ -8,7 +8,7 @@ Why it's safe, even on the full ~16 GB:
 - We never call .collect() / .toPandas() on the full data.
 
 Run inside the container:
-    ./run.sh submit src/mini_test.py
+    ./run.sh submit src/explore/mini_test.py
 """
 from pyspark.sql import SparkSession
 from pyspark.sql.functions import year, col
