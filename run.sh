@@ -6,6 +6,7 @@
 #   ./run.sh logs               follow the container logs
 #   ./run.sh shell              open a bash shell inside the container
 #   ./run.sh submit <file> [..] spark-submit a script inside the container
+#   ./run.sh pipeline           run the whole raw -> silver -> gold build, timed
 #   ./run.sh download [--full]  download the NYC taxi parquet into data/raw/
 #   ./run.sh down               stop the container
 set -euo pipefail
@@ -50,6 +51,25 @@ case "${1:-help}" in
       spark-submit --master "local[${SPARK_CORES:-*}]" \
       --driver-memory "${SPARK_DRIVER_MEM:-5g}" "$@"
     ;;
+  pipeline)
+    # full raw -> silver -> gold in dependency order, timing each stage; the
+    # timings are the baseline Week 3 optimizes against. stg_fhvhv defaults to 4
+    # cores (memory); every stage honours SPARK_CORES / SPARK_DRIVER_MEM if set.
+    stages="staging/stg_yellow staging/stg_fhvhv marts/trips_by_year marts/trips_by_period marts/trips_by_hour marts/trips_by_zone marts/mode_shift_yoy"
+    summary=""
+    pipe_start=$SECONDS
+    for s in $stages; do
+      cores="${SPARK_CORES:-*}"
+      [ "$s" = "staging/stg_fhvhv" ] && cores="${SPARK_CORES:-4}"
+      echo; echo "==> $s  (local[$cores])"
+      start=$SECONDS
+      $COMPOSE exec -w /home/jovyan/work -e PYTHONPATH=/home/jovyan/work/src pyspark \
+        spark-submit --master "local[$cores]" --driver-memory "${SPARK_DRIVER_MEM:-5g}" "src/$s.py"
+      summary+="$(printf '%-26s %4ds' "$s" "$((SECONDS - start))")"$'\n'
+    done
+    echo; echo "=== pipeline timings ==="; printf "%s" "$summary"
+    printf '%-26s %4ds\n' "TOTAL" "$((SECONDS - pipe_start))"
+    ;;
   download)
     shift || true
     bash src/download_data.sh "$@"
@@ -57,6 +77,6 @@ case "${1:-help}" in
   rebuild) $COMPOSE up -d --build ;;   # only when the Dockerfile / requirements change
   down)    $COMPOSE down ;;
   *)
-    echo "usage: ./run.sh [up|rebuild|token|logs|shell|submit <file>|download [--full]|down]"
+    echo "usage: ./run.sh [up|rebuild|token|logs|shell|submit <file>|pipeline|download [--full]|down]"
     ;;
 esac
