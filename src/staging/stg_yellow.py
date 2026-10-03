@@ -1,9 +1,8 @@
-"""Silver: conform + harmonize yellow taxi across years -> data/staging/yellow.
+"""Silver: conform yellow taxi across years -> data/staging/yellow.
 
-The TLC schema drifts year to year (e.g. passenger_count is double in 2019/2020 but
-bigint in 2025, and timestamps vary). We read each consistent-schema group on its own,
-cast every kept column to an explicit target type so all groups share one schema, then
-union and keep only the study window.
+The TLC schema drifts (passenger_count is double in 2019/2020, bigint in 2025), so we
+read each consistent-schema group on its own, cast to explicit types, union, and keep
+only the study window.
 """
 from pyspark.sql.functions import col, year
 
@@ -27,7 +26,7 @@ def conform(df):
     )
 
 
-# read each consistent-schema group separately (double vs bigint drift), then union
+# read each consistent-schema group separately, then union
 older = spark.read.parquet(
     f"{RAW}/yellow_tripdata_2019-*.parquet",
     f"{RAW}/yellow_tripdata_2020-*.parquet",
@@ -36,7 +35,7 @@ newer = spark.read.parquet(f"{RAW}/yellow_tripdata_2025-*.parquet")
 
 yellow = conform(older).unionByName(conform(newer))
 
-# drop rows whose pickup year is outside the study window (mis-recorded timestamps)
+# drop mis-recorded timestamps outside the study window
 yellow = yellow.filter(year("pickup_datetime").isin(*STUDY_YEARS))
 
 yellow.write.mode("overwrite").parquet(f"{STAGING}/yellow")
