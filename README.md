@@ -27,7 +27,7 @@ the host — you edit notebooks/scripts locally and they're mounted into the con
 ./run.sh download          # yellow 2019-01 + zone lookup, into data/raw/
 
 # 4. run the Day-1 "first look" (schema, count, sample)
-./run.sh submit src/first_look.py
+./run.sh submit src/explore/first_look.py
 ```
 
 When you're ready for the real dataset:
@@ -50,12 +50,17 @@ ny_taxi/
 ├── docker-compose.yml      # the pyspark service (JupyterLab + Spark UI)
 ├── requirements.txt        # extra Python deps (polars, plotly)
 ├── run.sh                  # up / token / shell / submit / download / down
-├── data/
-│   └── raw/                # parquet files (gitignored) — downloaded, not committed
+├── data/                   # all gitignored — code in the repo, data on disk
+│   ├── raw/                # bronze — downloaded parquet
+│   ├── staging/            # silver — cleaned & conformed
+│   └── marts/              # gold — business-ready aggregations
 ├── notebooks/              # exploratory JupyterLab notebooks
 └── src/
+    ├── common.py           # shared Spark helpers + medallion paths
     ├── download_data.sh    # fetch NYC TLC parquet into data/raw/
-    └── first_look.py       # Day-1 read + profile
+    ├── staging/            # silver jobs (stg_yellow, stg_fhvhv)
+    ├── marts/              # gold jobs (trips_by_year, ...)
+    └── explore/            # week-1 learning scripts (first_look, mini_test, explain_demo)
 ```
 
 ## Data
