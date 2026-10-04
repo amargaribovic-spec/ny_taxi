@@ -30,10 +30,11 @@ the host — you edit notebooks/scripts locally and they're mounted into the con
 ./run.sh submit src/explore/first_look.py
 ```
 
-When you're ready for the real dataset:
+When you're ready for the real dataset, download it and build the whole pipeline:
 
 ```bash
 ./run.sh download --full   # yellow + fhvhv, 2019 / 2020 / 2025 (~16 GB)
+./run.sh pipeline          # raw -> silver -> gold, timed; writes data/staging + data/marts
 ```
 
 Other commands: `./run.sh shell` (bash inside the container), `./run.sh logs`,
