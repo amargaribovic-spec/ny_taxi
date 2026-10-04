@@ -8,6 +8,9 @@ bundled, so there's nothing to install on the host but Docker.
 measured against the 2019 baseline — and how the balance shifted from yellow taxis
 to app rideshare (HVFHV).
 
+**Full write-up** (findings, architecture decisions, scaling trade-offs):
+**[docs/WRITEUP.md](docs/WRITEUP.md)**.
+
 ## What's in the container
 
 `quay.io/jupyter/pyspark-notebook` gives a matched **Spark + JDK + Python + JupyterLab**;
@@ -47,6 +50,7 @@ write-up.
 ```
 ny_taxi/
 ├── README.md
+├── docs/WRITEUP.md         # technical write-up: findings, decisions, scaling
 ├── docs/PERFORMANCE.md     # tuning notes, baseline timings, optimization write-up
 ├── Dockerfile              # pyspark-notebook base + extra libs
 ├── docker-compose.yml      # the pyspark service (JupyterLab + Spark UI)
