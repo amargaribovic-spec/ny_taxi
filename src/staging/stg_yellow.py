@@ -36,6 +36,8 @@ newer = spark.read.parquet(f"{RAW}/yellow_tripdata_2025-*.parquet")
 yellow = in_study_window(conform(older).unionByName(conform(newer)))
 
 yellow.write.mode("overwrite").parquet(f"{STAGING}/yellow")
-print(f"staging/yellow written: {yellow.count():,} rows")
+
+n = spark.read.parquet(f"{STAGING}/yellow").count()
+print(f"staging/yellow written: {n:,} rows")
 
 spark.stop()
